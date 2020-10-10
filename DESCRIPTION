@@ -1,5 +1,5 @@
 Package: surexr
-Title: What the Package Does (One Line, Title Case)
+Title: SUR Estimates For Currency Excess Returns
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "First",
