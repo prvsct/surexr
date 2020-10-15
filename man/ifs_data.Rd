@@ -7,9 +7,9 @@
 ifs_data(indicator, country, start, end, freq)
 }
 \arguments{
-\item{indicator}{A character, the IFS database indicator as in \code{\link{ifs_indicators}}.}
+\item{indicator}{A character, the IFS database indicator as in \code{ifs_indicators} dataframe.}
 
-\item{country}{A character, the ISO code of the country as in \code{\link{ifs_countries}}.}
+\item{country}{A character, the ISO code of the country as in \code{ifs_countries} dataframe.}
 
 \item{start}{A number, the year for which you would like to start gathering the data.}
 
