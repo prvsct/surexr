@@ -12,7 +12,7 @@
 # ---- CARREGAMENTO DOS PAISES ----
 
 # Carrega a imagem de países conforme gerada por paises_iso.R
-# ATENÇÃO: se houver mudanças nos países, verificar se nova versão de países_iso.R foi salva
+# ATENÇÃO: se houver mudanças nos países, verificar se nova versão de países_iso.Rdata foi salva
 load(file = "data//paises_iso.Rdata")
 
 # ----- DOWNLOAD DOS DADOS ------
@@ -29,3 +29,7 @@ exrate <- surexr::ifs_data(indicator = "ENDE_XDC_USD_RATE",
 # Salva a base de dados, 70kb com 5737 obs, em exrate.Rdata
 save(exrate, file = "data//exrate.Rdata")
 
+# ---- ANALISES INICIAIS ----
+
+# Torna a exrate larga,
+exrate_wide <- tidyr::pivot_wider(data = exrate, names_from = "iso2c", values_from = "ENDE_XDC_USD_RATE")
