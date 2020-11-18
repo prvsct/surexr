@@ -52,6 +52,6 @@ save(paises_iso, file = "data/paises_iso.Rdata")
 # As três informações estão contidas no vetor timespan, na ordem: ano de início, ano final, frequência
 
 # Vetor timespan
-timespan <- c(1999, 2014, "M")
+timespan <- c(1999, 2020, "M")
 names(timespan) <- c("início","final","frequência")
 save(timespan, file = "data/timespan.Rdata")
