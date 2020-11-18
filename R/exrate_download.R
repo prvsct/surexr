@@ -30,11 +30,36 @@ load(file = "data//timespan.Rdata")
 # É preciso assegurar que start e end sejam valores numéricos, daí o uso de as.numeric
 # Analogamente para freq, que deve ser character
 # ENDE_XDC_USD_RATE conforme surexr::ifs_indicators
-exrate <- surexr::ifs_data(indicator = "ENDE_XDC_USD_RATE",
+
+exrate_paises_iso <- surexr::ifs_data(indicator = "ENDE_XDC_USD_RATE",
                            country = paises_iso,
                            start = as.numeric(timespan["início"]),
                            end = as.numeric(timespan["final"]),
                            freq = as.character(timespan["frequência"]))
+
+# ---- DOWNLOAD DOS DADOS: ALEMANHA ----
+
+# Para Alemanha, os valores de taxa de câmbio no período são os da zona do euro
+# O código para a zona do euro é U2
+# Checar hein: https://github.com/christophergandrud/imfr/issues/15
+
+exrate_EA <- surexr::ifs_data(indicator = "ENDE_XDC_USD_RATE",
+                           country = "U2",
+                           start = as.numeric(timespan["início"]),
+                           end = as.numeric(timespan["final"]),
+                           freq = as.character(timespan["frequência"]))
+
+# Substituir o U2 para DE conforme padrão dos demais códigos
+
+exrate_EA$iso2c <- "DE"
+
+
+# ---- APPEND DAS DUAS BASES ----
+
+# Une a exrate com exrate_EA usando um append simples
+
+exrate <- dplyr::bind_rows(exrate_paises_iso, exrate_EA)
+
 
 # ---- CORTE DO PERÍODO FINAL DE 2014 ----
 
@@ -44,12 +69,11 @@ exrate <- surexr::ifs_data(indicator = "ENDE_XDC_USD_RATE",
 # ATENÇÃO: essa seção deve ser totalmente removida quando for rodar para o timespan mais recente
 
 corte_2014t2 <- c("2014-07","2014-08","2014-09","2014-10","2014-11","2014-12")
-exrate <- dplyr::filter(.data = exrate, !exrate$year_month %in% corte_2014t2)
-#
-# # Salva a base de dados, 70kb com 5737 obs, em exrate.Rdata
-# save(exrate, file = "data//exrate.Rdata")
+exrate_2014 <- dplyr::filter(.data = exrate, !exrate$year_month %in% corte_2014t2)
 
-# ---- ANALISES INICIAIS ----
+# ---- SALVANDO AS BASES ----
 
-# Torna a exrate larga,
-exrate_wide <- tidyr::pivot_wider(data = exrate, names_from = "iso2c", values_from = "ENDE_XDC_USD_RATE")
+# Salva os dois dataframes exrate e exrate_2014 em seus respectivos arquivos
+
+save(exrate, file = "exrate.Rdata")
+save(exrate_2014, file = "exrate_2014.Rdata")
