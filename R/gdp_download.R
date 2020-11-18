@@ -38,23 +38,17 @@ gdp_sa <- surexr::ifs_data(indicator = "NGDP_R_K_SA_IX",
                            end = as.numeric(timespan["final"]),
                            freq = "Q")
 
-# ---- CORTE DO PERÍODO FINAL DE 2014 ----
+# # ---- CORTE DO PERÍODO FINAL DE 2014 ----
+#
+# # Na dissertação, o período usado é de 1999T1 a 2014T2.
+# # Como só é possível selecionar anos cheios, é preciso remover os valores a partir de 2014T2
+# # Ou seja, retirar observações de 2014-07 a 2014-12
+# # ATENÇÃO: essa seção deve ser totalmente removida quando for rodar para o timespan mais recente
+#
+# corte_2014t2 <- c("2014-Q3","2014-Q4")
+# gdp_sa <- dplyr::filter(.data = gdp_sa, !gdp_sa$year_quarter %in% corte_2014t2)
 
-# Na dissertação, o período usado é de 1999T1 a 2014T2.
-# Como só é possível selecionar anos cheios, é preciso remover os valores a partir de 2014T2
-# Ou seja, retirar observações de 2014-07 a 2014-12
-# ATENÇÃO: essa seção deve ser totalmente removida quando for rodar para o timespan mais recente
-
-corte_2014t2 <- c("2014-Q3","2014-Q4")
-gdp_sa <- dplyr::filter(.data = gdp_sa, !gdp_sa$year_quarter %in% corte_2014t2)
-
-# ---- PIVOTAMENTO
-
-gdp_sa_wide <- pivot_wider(gdp_sa, names_from = "iso2c", values_from = "NGDP_R_K_SA_IX")
-# Veja que CO e ID possuem valores apenas a partir de 2000Q1
-# Os demais valores estão íntegros
-
-# ---- DOWNLOAD DOS DADOS NÃO SAZONALMENTE AJUSTADOS E AJUSTE SAZONAL ----
+# ---- DOWNLOAD DOS DADOS NÃO SAZONALMENTE AJUSTADOS
 
 # Segundo a dissertação, há países que não possuem dados sazonalmente ajustados na base. Quais?
 gdp_sa_faltantes <- paises_iso[which(!paises_iso %in% gdp_sa$iso2c)]
@@ -66,25 +60,23 @@ gdp_nsa <- surexr::ifs_data(indicator = "NGDP_R_K_IX",
                            start = as.numeric(timespan["início"]),
                            end = as.numeric(timespan["final"]),
                            freq = "Q")
-#
-# # Ajuste sazonal usando pacote x12
-# gdp_nsa_x12 <- x12::new(Class = "x12Single", ts = gdp_nsa, tsName = "NGDP_R_K_IX")
 
-# ---- CÁLCULO DO CRESCIMENTO TRIMESTRAL DO PIB ----
+# ---- AJUSTE SAZONAL USANDO PACOTE x12
 
-# Para calcular o crescimento timestral do PIB conforme descrito na dissertação:
-# yt = ln(GDPt) - ln(GDPt-1)
-gdp_growth <- gdp_sa %>% #gdp_growth recebe inicialmente gdp_sa
-  group_by(iso2c) %>% #as próximas ações serão feitas para cada grupo em iso2c
-  mutate(growth = log(NGDP_R_K_SA_IX) - log(lag(NGDP_R_K_SA_IX)), .keep="unused") #cria a variável de crescimento e elimina a do produto
-# a função lag do dplyr retorna o valor da linha anterior
+x12::x12path(path = getwd())
 
-# ---- CÁLCULO DAS ESTATÍSTICAS DESCRITIVAD DO CRESCIMENTO DO PIB ----
+ts_pe <- ts(data = gdp_nsa$NGDP_R_K_IX[gdp_nsa$iso2c=="PE"],
+            start = c(1999, 1),
+            end = c(2017, 1),
+            frequency = 4)
 
-# Replicar tabela 1 na pág 32 da dissertação
-gdp_growth_stats <- gdp_growth %>%
-  group_by(iso2c) %>%
-  summarise(mean = round(mean(growth, na.rm = T),5)*100,
-            sd = round(sd(growth, na.rm = T),5)*100,
-            min = round(min(growth, na.rm = T),5)*100,
-            max = round(max(growth, na.rm = T),5)*100)
+ts_tr <- ts(data = gdp_nsa$NGDP_R_K_IX[gdp_nsa$iso2c=="TR"],
+            start = c(1999, 1),
+            end = c(2020, 2),
+            frequency = 4)
+
+x12_pe <- new(Class = "x12Single", ts = ts_pe)
+
+x12_tr <- new(Class = "x12Single", ts = ts_tr)
+
+gdp_sa_pe <- x12::x12(x12_pe)
