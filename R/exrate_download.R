@@ -1,3 +1,5 @@
+library(tidyverse)
+
 # ----- INTRODUÇÃO ------
 
 # Esse código realiza o download da taxa nominal de câmbio, final do período, em USD
@@ -66,6 +68,9 @@ exrate_EA$iso2c <- "DE"
 
 exrate <- dplyr::bind_rows(exrate_paises_iso, exrate_EA)
 
+# Pivotamento para checar integridade
+
+exrate_wide <- pivot_wider(data = exrate,names_from = "iso2c",values_from = "ENDE_XDC_USD_RATE")
 
 # ---- CORTE DO PERÍODO FINAL DE 2014 ----
 
