@@ -86,3 +86,14 @@ ts_tr <- gdp_nsa %>%
 # Ajuste sazonal automático
 gdp_pe_ajustada <- seasonal::seas(x = ts_pe)
 gdp_tr_ajustada <- seasonal::seas(x = ts_tr)
+
+
+# --- APPEND FINAL DAS BASES ----
+
+colnames(gdp_nsa)[3] <- cod_gdp_sa
+
+gdp <- bind_rows(gdp_nsa, gdp_sa)
+
+# Pivotamento para checar integridade
+
+gdp_wide <- pivot_wider(data = gdp, names_from = "iso2c", values_from = cod_gdp_sa)
