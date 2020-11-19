@@ -80,7 +80,17 @@ treasury_bills_ausentes <- paises_iso[which(!paises_iso %in% unique(treasury_bil
 
 # Quais são esses países?
 
-paises_taxa_deposito <- c("AU", "CL", "CO", "KR", "ID", "PE", "SG", "TR")
+paises_taxa_deposito <- c("AU", "CL", "CO", "KR", "ID", "PE", "SG", "TR", "TH")
+
+deposit_rate <- surexr::ifs_data(indicator = "FIDR_PA",
+                                   country = paises_taxa_deposito,
+                                   start = timespan["início"],
+                                   end = timespan["final"],
+                                   freq = "M")
+
+# Pivotamento para checar integridade
+
+deposit_rate_wide <- pivot_wider(deposit_rate, names_from = "iso2c", values_from = "FIDR_PA")
 
 # --- DOWNLOAD DOS GOVERNMENT BONDS ----
 
@@ -91,6 +101,33 @@ paises_taxa_deposito <- c("AU", "CL", "CO", "KR", "ID", "PE", "SG", "TR")
 
 paises_gov_bonds <- c("NO","DE")
 
+gov_bonds <- surexr::ifs_data(indicator = "FIGB_PA",
+                                 country = paises_gov_bonds,
+                                 start = timespan["início"],
+                                 end = timespan["final"],
+                                 freq = "M")
+
+# Pivotamento para checar integridade
+
+gov_bonds_wide <- pivot_wider(gov_bonds, names_from = "iso2c", values_from = "FIGB_PA")
+
 # --- SUBSTITUIÇÃO DAS SÉRIES PELAS MAIS AMPLAS
+
+# Primeiro vamos remover as séries em treasury_bills que serão substituídas
+# por outras
+# são elas: AU. SG, TH
+
+treasury_bills_wide <- select(.data = treasury_bills_wide, -AU,-SG,-TH)
+
+# Vamos verificar se as variáveis em cada uma das três bases são unicas
+
+var_finais <- c(colnames(treasury_bills_wide)[-1],
+                colnames(deposit_rate_wide)[-1],
+                colnames(gov_bonds_wide)[-1])
+
+paises_iso[which(!paises_iso %in% var_finais)]
+
+# ---- TABELA COM INFORMAÇÕES DE CADA PAÍS
+
 
 # --- APPEND FINAL DAS BASES ---
