@@ -21,6 +21,12 @@ load(file = "data//paises_iso.Rdata")
 # ATENÇÃO: se houver mudanças no período amostral, verificar se nova versão de timespan.Rdata foi salva
 load(file = "data//timespan.Rdata")
 
+# ---- DEFINIÇÃO DOS CÓDIGOS
+
+# Código da taxa de câmbio usada para downloado IFS
+
+cod_exrate <- "ENDE_XDC_USD_RATE"
+
 
 # ----- DOWNLOAD DOS DADOS ------
 
@@ -31,7 +37,7 @@ load(file = "data//timespan.Rdata")
 # Analogamente para freq, que deve ser character
 # ENDE_XDC_USD_RATE conforme surexr::ifs_indicators
 
-exrate_paises_iso <- surexr::ifs_data(indicator = "ENDE_XDC_USD_RATE",
+exrate_paises_iso <- surexr::ifs_data(indicator = cod_exrate,
                            country = paises_iso,
                            start = as.numeric(timespan["início"]),
                            end = as.numeric(timespan["final"]),
@@ -43,7 +49,7 @@ exrate_paises_iso <- surexr::ifs_data(indicator = "ENDE_XDC_USD_RATE",
 # O código para a zona do euro é U2
 # Checar hein: https://github.com/christophergandrud/imfr/issues/15
 
-exrate_EA <- surexr::ifs_data(indicator = "ENDE_XDC_USD_RATE",
+exrate_EA <- surexr::ifs_data(indicator = cod_exrate,
                            country = "U2",
                            start = as.numeric(timespan["início"]),
                            end = as.numeric(timespan["final"]),
@@ -75,5 +81,5 @@ exrate_2014 <- dplyr::filter(.data = exrate, !exrate$year_month %in% corte_2014t
 
 # Salva os dois dataframes exrate e exrate_2014 em seus respectivos arquivos
 
-save(exrate, file = "exrate.Rdata")
-save(exrate_2014, file = "exrate_2014.Rdata")
+save(exrate, file = "data//exrate.Rdata")
+save(exrate_2014, file = "data//exrate_2014.Rdata")
