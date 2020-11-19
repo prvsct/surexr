@@ -1,5 +1,6 @@
 library(tidyverse)
 
+
 # ----- INTRODUÇÃO ------
 
 # Esse código realiza o download do volume de PIB trimestral, em USD, ano base 2010, sazonalmente ajustado
@@ -15,13 +16,18 @@ library(tidyverse)
 
 # Carrega a imagem de países conforme gerada por definir_base.R
 # ATENÇÃO: se houver mudanças nos países, verificar se nova versão de países_iso.Rdata foi salva
-load(file = "data//paises_iso.Rdata")
+load(file = "data/paises_iso.Rdata")
 
 # ---- CARREGAMENTO DO PERÍODO AMOsTRAL ----
 
 # Carrega a imagem do período amostral conforme gerada por definir_base.R
 # ATENÇÃO: se houver mudanças no período amostral, verificar se nova versão de timespan.Rdata foi salva
-load(file = "data//timespan.Rdata")
+load(file = "data/timespan.Rdata")
+
+# ---- DEFINIÇÃO DOS CÓDIGOS
+
+cod_gdp_sa <- "NGDP_R_K_SA_IX"
+cod_gdp_nsa <- "NGDP_R_K_IX"
 
 
 # ----- DOWNLOAD DOS DADOS SAZONALMENTE AJUSTADOS ------
@@ -32,7 +38,7 @@ load(file = "data//timespan.Rdata")
 # É preciso assegurar que start e end sejam valores numéricos, daí o uso de as.numeric
 # Analogamente para freq, que deve ser character
 # NGDP_R_K_SA_IX conforme surexr::ifs_indicators
-gdp_sa <- surexr::ifs_data(indicator = "NGDP_R_K_SA_IX",
+gdp_sa <- surexr::ifs_data(indicator = cod_gdp_sa,
                            country = paises_iso,
                            start = as.numeric(timespan["início"]),
                            end = as.numeric(timespan["final"]),
@@ -55,28 +61,13 @@ gdp_sa_faltantes <- paises_iso[which(!paises_iso %in% gdp_sa$iso2c)]
 
 # Mesmo processo anterior, mas para países em gdp_sa_faltantes
 # Código: NGDP_R_K_IX
-gdp_nsa <- surexr::ifs_data(indicator = "NGDP_R_K_IX",
+gdp_nsa <- surexr::ifs_data(indicator = cod_gdp_nsa,
                            country = gdp_sa_faltantes,
                            start = as.numeric(timespan["início"]),
                            end = as.numeric(timespan["final"]),
                            freq = "Q")
 
-# ---- AJUSTE SAZONAL USANDO PACOTE x12
+# ---- AJUSTE SAZONAL ----
 
-x12::x12path(path = getwd())
 
-ts_pe <- ts(data = gdp_nsa$NGDP_R_K_IX[gdp_nsa$iso2c=="PE"],
-            start = c(1999, 1),
-            end = c(2017, 1),
-            frequency = 4)
 
-ts_tr <- ts(data = gdp_nsa$NGDP_R_K_IX[gdp_nsa$iso2c=="TR"],
-            start = c(1999, 1),
-            end = c(2020, 2),
-            frequency = 4)
-
-x12_pe <- new(Class = "x12Single", ts = ts_pe)
-
-x12_tr <- new(Class = "x12Single", ts = ts_tr)
-
-gdp_sa_pe <- x12::x12(x12_pe)
