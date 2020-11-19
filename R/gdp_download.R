@@ -1,6 +1,5 @@
 library(tidyverse)
 
-
 # ----- INTRODUÇÃO ------
 
 # Esse código realiza o download do volume de PIB trimestral, em USD, ano base 2010, sazonalmente ajustado
@@ -69,5 +68,21 @@ gdp_nsa <- surexr::ifs_data(indicator = cod_gdp_nsa,
 
 # ---- AJUSTE SAZONAL ----
 
+# Definição do caminho do executável x13
+x13_path <- paste0(getwd(),"/x13as")
+Sys.setenv(X13_PATH = x13_path)
 
+# Transformação das séries em objetos do tipo ts
+ts_pe <- gdp_nsa %>%
+  pivot_wider(names_from = "iso2c",values_from = cod_gdp_nsa) %>%
+  select(PE) %>%
+  ts(start = c(1999, 1), end = c(2017, 1), frequency = 4)
 
+ts_tr <- gdp_nsa %>%
+  pivot_wider(names_from = "iso2c",values_from = cod_gdp_nsa) %>%
+  select(TR) %>%
+  ts(start = c(1999, 1), end = c(2020, 2), frequency = 4)
+
+# Ajuste sazonal automático
+gdp_pe_ajustada <- seasonal::seas(x = ts_pe)
+gdp_tr_ajustada <- seasonal::seas(x = ts_tr)
