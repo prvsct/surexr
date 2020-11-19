@@ -10,7 +10,7 @@ library(tidyverse)
 # 2) Taxas de depósito
 # 3) Government bonds
 #
-# No código, serão baixadas para todos os países as três séries, cada uma
+# No código, serão baixada para todos os países as três séries, cada uma
 # em uma base de acordo com paises_iso, timespan e o código definido na seção
 # de código. Após o download, serão verificados quais as melhores séries para
 # cada país, de acordo com o número de observações, a presença de valores
