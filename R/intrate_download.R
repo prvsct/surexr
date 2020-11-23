@@ -77,35 +77,13 @@ gov_bonds <- surexr::ifs_data(indicator = cod_gov_bonds,
 
 gov_bonds_wide <- pivot_wider(gov_bonds, names_from = "iso2c", values_from = "FIGB_PA")
 
-# --- SUBSTITUIÇÃO DAS SÉRIES PELAS MAIS AMPLAS ----
+# --- SALVAR AS SÉRIES NOS RESPECTIVOS ARQUIVOS ----
 
+# Treasury bills
+save(treasury_bills, file = "data//treasury_bills.Rdata")
 
-# --- APPEND FINAL DAS BASES ---
+# Deposit rate
+save(deposit_rate, file = "data//deposit_rate.Rdata")
 
-
-# # ---- TABELA COM INFORMAÇÕES DE CADA PAÍS ----
-#
-# # Cria uma tabela com cada país, a taxa de juros utilizada e o período amostral
-#
-# intrate_dados_descricao <- data.frame(
-#   "País"=character(length(paises_iso)),
-#   "Variável"=character(length(paises_iso)),
-#   "Código"=character(length(paises_iso)),
-#   "Amostra"=character(length(paises_iso)),
-#   "Frequência"=character(length(paises_iso)),
-#   "Observações"=character(length(paises_iso))
-# )
-#
-# intrate_dados_descricao$País <- paises_iso
-#
-# # Tipo de série utilizada
-# intrate_dados_descricao$Variável[intrate_dados_descricao$País %in% colnames(treasury_bills_wide)] <- "Treasury Bills"
-# intrate_dados_descricao$Variável[intrate_dados_descricao$País %in% colnames(deposit_rate_wide)] <- "Deposit Rate"
-# intrate_dados_descricao$Variável[intrate_dados_descricao$País %in% colnames(gov_bonds_wide)] <- "Government Bonds"
-#
-# # Código da série utilizada
-# intrate_dados_descricao$Código[intrate_dados_descricao$Variável=="Treasury Bills"] <- cod_treasury_bills
-# intrate_dados_descricao$Código[intrate_dados_descricao$Variável=="Deposit Rate"] <- cod_deposit_rate
-# intrate_dados_descricao$Código[intrate_dados_descricao$Variável=="Government Bonds"] <- cod_gov_bonds
-#
-# # Amostra de cada país
+# Gov bonds
+save(gov_bonds, file = "data//gov_bonds.Rdata")
