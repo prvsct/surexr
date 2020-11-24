@@ -1,3 +1,5 @@
+library(tidyverse)
+
 # --- INTRODUÇÃO ---
 #
 # Esse código constrói uma tabela para a taxa de juros que exibe qual série foi utilizada,
@@ -7,7 +9,12 @@
 #
 # ATENÇÃO: antes de começar, verificar se as bases corretas foram salvas em intrate_download.R
 
-# ---- CARREGAMENTO DAS BASES E PIVOTAMENTO ----
+# ---- CARRREGAMENTO DOS PAÍSES E DE TIMESPAN CONFORME definir_base.R ----
+
+# Lista de países
+load(file = "data//paises_iso.Rdata")
+
+# ---- CARREGAMENTO DAS BASES SALVAS EM intrate_download.R ----
 
 # Lista completa de paises
 load(file = "data//paises_iso.Rdata")
@@ -21,48 +28,76 @@ load(file = "data//deposit_rate.Rdata")
 # Gov Bonds
 load(file = "data//gov_bonds.Rdata")
 
-# --- CRIAÇÃO DOS DATAFRAMES POR PAÍS DENTRO DE UMA LISTA ----
+# --- PREPARAÇÃO DA TABELA ----
 
-# Criação da lista vazia
-paises_juros <- list()
+# Códigos do IFS de cada série
+intrate_ifs_codes <- c(colnames(treasury_bills)[3],
+                       colnames(deposit_rate)[3],
+                       colnames(gov_bonds)[3])
 
-for(i in 1:length(paises_iso)){
+# Criação do dataframe
+intrate_tabela <- data.frame("País"=character(3*length(paises_iso)),
+                             "Série"=character(3*length(paises_iso)),
+                             "Amostra"=character(3*length(paises_iso)),
+                             "Observações"=character(3*length(paises_iso)))
 
-  # Criação de dataframe com o país selecionado de treausury_bills
-  # Primeiro aux_treasury recebe treasury_bills %>%
-  # Então faz o pivotamento para separar por cada coluna de país %>%
-  # Em seguida seleciona a coluna year_month e a coluna referente ao paises_iso[i]
-  # Renomeia os nomes das colunas do df para possibilitar o join
-  aux_treasury <- treasury_bills %>%
-    pivot_wider(names_from = "iso2c", values_from = colnames(treasury_bills)[3]) %>%
-    select(year_month, all_of(paises_iso[i]))
-  colnames(aux_treasury) <- c("year_month", paste0(paises_iso[i],"_treasury"))
+# Códigos dos países na coluna de país
+intrate_tabela$País <- rep(paises_iso,3)[order(rep(paises_iso,3))]
 
-  # Procedimentos analogos:
+# Códigos das séries nas colunas de série
+intrate_tabela$Série <- rep(intrate_ifs_codes,23)
 
-  aux_deposit <- deposit_rate %>%
-    pivot_wider(names_from = "iso2c", values_from = colnames(deposit_rate)[3]) %>%
-    select(year_month, all_of(paises_iso[i]))
-  colnames(aux_deposit) <- c("year_month", paste0(paises_iso[i],"_deposit"))
+# ---- PREENCHIMENTO PARA TREASURY BILLS ----
+#
+# A ideia é realizar um for para cada uma das três séries. Tome como exemplo treasury_bills
+# Neste for, intrate_tabela cuja série for de treasury_bills (conforme itrate_ifs_codes) irá
+# ter sua coluna de Amostra preenchida pelo paste do começo de year_month até o final de
+# year_month do país i. Em seguida, será feito o mesmo para calcular o número de observações,
+# ambos fazendo proveito de length(). Analogamente para as  demais séries
 
-  aux_gov <- gov_bonds %>%
-    pivot_wider(names_from = "iso2c", values_from = colnames(gov_bonds)[3]) %>%
-    select(year_month, all_of(paises_iso[i]))
-  colnames(aux_gov) <- c("year_month", paste0(paises_iso[i],"_gov"))
+for(i in paises_iso){
 
-  # O elemento [[i]] de paises_juros recebe o join das três bases acima:
+  # Preenchimento da coluna de Amostra
+  intrate_tabela$Amostra[intrate_tabela$País==i & intrate_tabela$Série==intrate_ifs_codes[1]] <-
+    paste(treasury_bills$year_month[treasury_bills$iso2c==i][1],
+          treasury_bills$year_month[treasury_bills$iso2c==i][length(treasury_bills$year_month[treasury_bills$iso2c==i])],
+          sep = " a ")
 
-  paises_juros[[i]] <- aux_treasury %>%
-    inner_join(aux_deposit) %>%
-    inner_join(aux_gov)
+  # Preenchimento do número de observações
+  intrate_tabela$Observações[intrate_tabela$País==i & intrate_tabela$Série==intrate_ifs_codes[1]] <-
+    length(treasury_bills$year_month[treasury_bills$iso2c==i])
 
 }
 
-# PROBLEMA: o código dá erro quando tenta selecionar colunas que não existem
-# quando o dado não existe para aquela série. O que fazer? Soluções
-# 1) criar colunas em todos os dfs de forma que quando não exista uma série pra certo país
-# o dataframe daquele país tenha uma coluna com apenas NA
-# 2) checar se a coluna existe no df antes de fazer o select com uma if clause
+# ---- PREENCHIMENTO PARA DEPOSIT RATES ----
 
+for(i in paises_iso){
 
+  # Preenchimento da coluna de Amostra
+  intrate_tabela$Amostra[intrate_tabela$País==i & intrate_tabela$Série==intrate_ifs_codes[2]] <-
+    paste(deposit_rate$year_month[deposit_rate$iso2c==i][1],
+          deposit_rate$year_month[deposit_rate$iso2c==i][length(deposit_rate$year_month[deposit_rate$iso2c==i])],
+          sep = " a ")
+
+  # Preenchimento do número de observações
+  intrate_tabela$Observações[intrate_tabela$País==i & intrate_tabela$Série==intrate_ifs_codes[2]] <-
+    length(deposit_rate$year_month[deposit_rate$iso2c==i])
+
+}
+
+# ---- PRENCHIMENTO PARA GOV BONDS ----
+
+for(i in paises_iso){
+
+  # Preenchimento da coluna de Amostra
+  intrate_tabela$Amostra[intrate_tabela$País==i & intrate_tabela$Série==intrate_ifs_codes[3]] <-
+    paste(gov_bonds$year_month[gov_bonds$iso2c==i][1],
+          gov_bonds$year_month[gov_bonds$iso2c==i][length(gov_bonds$year_month[gov_bonds$iso2c==i])],
+          sep = " a ")
+
+  # Preenchimento do número de observações
+  intrate_tabela$Observações[intrate_tabela$País==i & intrate_tabela$Série==intrate_ifs_codes[3]] <-
+    length(gov_bonds$year_month[gov_bonds$iso2c==i])
+
+}
 
