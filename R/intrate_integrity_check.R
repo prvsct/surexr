@@ -133,4 +133,5 @@ print(xtable::xtable(x = intrate_tabela_export),
       floating = F,
       latex.environments = NULL,
       booktabs = T,
+      include.rownames = F,
       file = "C:\\Pedro Roveri Scatimburgo\\Outputs\\intrate_tabela.tex")
