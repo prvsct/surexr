@@ -101,3 +101,36 @@ for(i in paises_iso){
 
 }
 
+# --- PREPARAÇÃO PARA EXPORTAR ----
+
+intrate_tabela_export <- intrate_tabela
+
+# Substitui "NA a" por "Ausente"
+intrate_tabela_export$Amostra <- str_replace(string = intrate_tabela_export$Amostra,
+                                      pattern = "NA a ",
+                                      replacement = "Ausente")
+# Corrige GB
+# Em deposit_rate, havia uma linha para GB com apenas valores ausentes, de forma que consta para
+# GB deposit_rate uma amostra NA com 1 observação
+intrate_tabela_export$Amostra[23] <- "Ausente"
+intrate_tabela_export$Observações[23] <- 0
+
+# Substitui código iso2c do país pelo nome do país
+nomes <- surexr::ifs_countries[which(surexr::ifs_countries$Code %in% paises_iso),]
+intrate_tabela_export$País <- rep(nomes$Name,3)[order(rep(nomes$Name,3))]
+
+# Adiciona coluna de descrição da série
+intrate_tabela_export$Descrição <- NA
+intrate_tabela_export$Descrição[intrate_tabela_export$Série==intrate_ifs_codes[1]] <- "Treasury Bills"
+intrate_tabela_export$Descrição[intrate_tabela_export$Série==intrate_ifs_codes[2]] <- "Deposit Rates"
+intrate_tabela_export$Descrição[intrate_tabela_export$Série==intrate_ifs_codes[3]] <- "Government Bonds"
+
+# Reordena as colunas
+intrate_tabela_export <- intrate_tabela_export[,c(1,2,5,3,4)]
+
+# Exportação
+print(xtable::xtable(x = intrate_tabela_export),
+      floating = F,
+      latex.environments = NULL,
+      booktabs = T,
+      file = "C:\\Pedro Roveri Scatimburgo\\Outputs\\intrate_tabela.tex")
