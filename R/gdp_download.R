@@ -43,16 +43,6 @@ gdp_sa <- surexr::ifs_data(indicator = cod_gdp_sa,
                            end = as.numeric(timespan["final"]),
                            freq = "Q")
 
-# # ---- CORTE DO PERÍODO FINAL DE 2014 ----
-#
-# # Na dissertação, o período usado é de 1999T1 a 2014T2.
-# # Como só é possível selecionar anos cheios, é preciso remover os valores a partir de 2014T2
-# # Ou seja, retirar observações de 2014-07 a 2014-12
-# # ATENÇÃO: essa seção deve ser totalmente removida quando for rodar para o timespan mais recente
-#
-# corte_2014t2 <- c("2014-Q3","2014-Q4")
-# gdp_sa <- dplyr::filter(.data = gdp_sa, !gdp_sa$year_quarter %in% corte_2014t2)
-
 # ---- DOWNLOAD DOS DADOS NÃO SAZONALMENTE AJUSTADOS
 
 # Segundo a dissertação, há países que não possuem dados sazonalmente ajustados na base. Quais?
@@ -66,34 +56,11 @@ gdp_nsa <- surexr::ifs_data(indicator = cod_gdp_nsa,
                            end = as.numeric(timespan["final"]),
                            freq = "Q")
 
-# ---- AJUSTE SAZONAL ----
 
-# Definição do caminho do executável x13
-x13_path <- paste0(getwd(),"/x13as")
-Sys.setenv(X13_PATH = x13_path)
+# --- SALVAMENTO DAS BASES ----
 
-# Transformação das séries em objetos do tipo ts
-ts_pe <- gdp_nsa %>%
-  pivot_wider(names_from = "iso2c",values_from = cod_gdp_nsa) %>%
-  select(PE) %>%
-  ts(start = c(1999, 1), end = c(2017, 1), frequency = 4)
+# gdp_sa
+save(gdp_sa, file = "data//gdp_sa.Rdata")
 
-ts_tr <- gdp_nsa %>%
-  pivot_wider(names_from = "iso2c",values_from = cod_gdp_nsa) %>%
-  select(TR) %>%
-  ts(start = c(1999, 1), end = c(2020, 2), frequency = 4)
-
-# Ajuste sazonal automático
-gdp_pe_ajustada <- seasonal::seas(x = ts_pe)
-gdp_tr_ajustada <- seasonal::seas(x = ts_tr)
-
-
-# --- APPEND FINAL DAS BASES ----
-
-colnames(gdp_nsa)[3] <- cod_gdp_sa
-
-gdp <- bind_rows(gdp_nsa, gdp_sa)
-
-# Pivotamento para checar integridade
-
-gdp_wide <- pivot_wider(data = gdp, names_from = "iso2c", values_from = cod_gdp_sa)
+# gdp_nsa
+save(gdp_nsa, file = "data//gdp_nsa.Rdata")
