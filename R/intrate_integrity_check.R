@@ -9,11 +9,6 @@ library(tidyverse)
 #
 # ATENÇÃO: antes de começar, verificar se as bases corretas foram salvas em intrate_download.R
 
-# ---- CARRREGAMENTO DOS PAÍSES E DE TIMESPAN CONFORME definir_base.R ----
-
-# Lista de países
-load(file = "data//paises_iso.Rdata")
-
 # ---- CARREGAMENTO DAS BASES SALVAS EM intrate_download.R ----
 
 # Lista completa de paises
@@ -117,13 +112,13 @@ intrate_tabela_export$Observações[23] <- 0
 
 # Substitui código iso2c do país pelo nome do país
 nomes <- surexr::ifs_countries[which(surexr::ifs_countries$Code %in% paises_iso),]
-intrate_tabela_export$País <- rep(nomes$Name,3)[order(rep(nomes$Name,3))]
+intrate_tabela_export$País <- rep(nomes$Name,each=3)
 
 # Adiciona coluna de descrição da série
 intrate_tabela_export$Descrição <- NA
-intrate_tabela_export$Descrição[intrate_tabela_export$Série==intrate_ifs_codes[1]] <- "Treasury Bills"
+intrate_tabela_export$Descrição[intrate_tabela_export$Série==intrate_ifs_codes[1]] <- "Treasury Bills Rates"
 intrate_tabela_export$Descrição[intrate_tabela_export$Série==intrate_ifs_codes[2]] <- "Deposit Rates"
-intrate_tabela_export$Descrição[intrate_tabela_export$Série==intrate_ifs_codes[3]] <- "Government Bonds"
+intrate_tabela_export$Descrição[intrate_tabela_export$Série==intrate_ifs_codes[3]] <- "Government Bonds Rates"
 
 # Reordena as colunas
 intrate_tabela_export <- intrate_tabela_export[,c(1,2,5,3,4)]
