@@ -33,7 +33,7 @@ gdp_growth_table$País <- paises_iso
 gdp_growth_table$Série <- gdp_ifs_code
 
 # Descrição da série na coluna Descrição
-gdp_growth_table$Descrição <- "IFS GDP Index (2010=100)"
+gdp_growth_table$Descrição <- "Seasonally Adjusted IFS GDP Index (2010=100)"
 
 # --- PREENCHIMENTO ----
 
@@ -52,6 +52,11 @@ for(i in paises_iso){
     length(gdp_growth$year_quarter[gdp_growth$iso2c==i])
 
 }
+
+# Troca o código e descrição de PE e TE
+gdp_growth_table$Série[gdp_growth_table$País=="PE" | gdp_growth_table$País=="TR"] <- "NGDP_R_K_IX"
+gdp_growth_table$Descrição[gdp_growth_table$País=="PE" | gdp_growth_table$País=="TR"] <- "IFS GDP Index (2010=100)"
+
 
 # ---- PREPARAÇÃO PARA EXPORTAR ----
 
